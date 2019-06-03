@@ -30,9 +30,10 @@
             <DataGrid.Columns>
                 <DataGridTextColumn 
                     Header="Сайт" 
-                    Binding="{Binding Path=Url}" />
+                    Binding="{Binding Url}" />
                 <DataGridTextColumn
-                    Header="Статус"/>
+                    Header="Статус"
+                    Binding="{Binding Status}"/>
             </DataGrid.Columns>
             
         </DataGrid>

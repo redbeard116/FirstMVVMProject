@@ -6,6 +6,8 @@ namespace PingSite
     {
         #region Fields
         private string _url;
+        private string _status;
+        private int _id;
         #endregion
 
         #region Public Properties
@@ -19,6 +21,32 @@ namespace PingSite
             }
         }
         
+        public string Status
+        {
+            get
+            {
+                return _status;
+            }
+            set
+            {
+                _status = value;
+                OnPC("Status");
+            }
+        }
+
+        public int Id
+        {
+            get
+            {
+                return _id;
+            }
+            set
+            {
+                _id = value;
+                OnPC("Id");
+            }
+        }
+
         public event PropertyChangedEventHandler PropertyChanged;
         #endregion
 
