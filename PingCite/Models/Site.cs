@@ -1,4 +1,6 @@
 ﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace PingSite
 {
@@ -20,7 +22,7 @@ namespace PingSite
                 OnPC("Url");
             }
         }
-        
+        [NotMapped]
         public string Status
         {
             get

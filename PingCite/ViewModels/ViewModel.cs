@@ -1,5 +1,4 @@
-﻿using Npgsql;
-using System;
+﻿using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
@@ -11,27 +10,36 @@ namespace PingSite
     public class ViewModel : INotifyPropertyChanged
     {
         #region Constructor
+        public ObservableCollection<Site> Sites { get; set; }
 
-        public string connectionString = "Server=127.0.0.1;User Id=postgres;Password=nagimullin;Database=SiteStatus;";
-
-        public ViewModel()
+        public ViewModel(IDBRepo dBRepo)
         {
             Sites = new ObservableCollection<Site>();
-            GetInterval();
-            GetSite();
+            _dBRepo = dBRepo;
+            var list = _dBRepo.GetSite();
+            foreach (Site _site in list.ToList())
+                Sites.Add(_site);
+
+            var listInterval = _dBRepo.GetInterval();
+            Interval = listInterval.Intervalsite;
+
             Thread t = new Thread(new ThreadStart(ThreadProc));
             t.IsBackground = true;
             t.Start();
         }
+
         #endregion
 
         #region Fields
+        private IDBRepo _dBRepo;
         private Site _site;
         private string _url;
         private int _interval;
         private string _status;
         private int _id;
+        #endregion
 
+        #region Command
         public RelayCommand DeleteCmd => new RelayCommand(Delete, CanDelete);
 
         public RelayCommand AddCmd => new RelayCommand(Add, CanAdd);
@@ -63,11 +71,7 @@ namespace PingSite
 
         private void Delete(object obj)
         {
-            NpgsqlConnection npgsqlConnection = new NpgsqlConnection(connectionString);
-            npgsqlConnection.Open();
-            NpgsqlCommand command = new NpgsqlCommand("DELETE FROM urlsite WHERE idsite = "+SelectedSite.Id+";", npgsqlConnection);
-            command.ExecuteReader();
-            npgsqlConnection.Close();
+            _dBRepo.Delete(SelectedSite);
             Sites.Remove(SelectedSite);
         }
 
@@ -78,81 +82,18 @@ namespace PingSite
 
         private void Add(object obj)
         {
-            Site site = new Site();
-            NpgsqlConnection npgsqlConnection = new NpgsqlConnection(connectionString);
-            npgsqlConnection.Open();
-            NpgsqlCommand command = new NpgsqlCommand("INSERT INTO urlsite (url) values ('" + Url + "') RETURNING idsite;", npgsqlConnection);
-            command.ExecuteReader();
-            npgsqlConnection.Close();
-            site.Url = Url;
-            Sites.Add(site);
-            SelectedSite = site;
-        }
-
-        private void GetSite()
-        {
-            NpgsqlConnection npgsqlConnection = new NpgsqlConnection(connectionString);
-            npgsqlConnection.Open();
-            NpgsqlCommand command = new NpgsqlCommand("SELECT idsite, url FROM urlsite", npgsqlConnection);
-            NpgsqlDataReader reader = command.ExecuteReader();
-            try
-            {
-                if (reader.HasRows)
-                {
-                    while (reader.Read())
-                    {
-                        string result = reader.GetString(1);
-                        int _id = reader.GetInt32(0);
-                        Site site = new Site();
-                        site.Url = result;
-                        site.Id = _id;
-                        Sites.Add(site);
-                    }
-                }
-                reader.Close();
-                npgsqlConnection.Close();
-            }
-            catch (Exception ex)
-            {
-            }
-        }
-
-        private void GetInterval()
-        {
-            NpgsqlConnection npgsqlConnection = new NpgsqlConnection(connectionString);
-            npgsqlConnection.Open();
-            NpgsqlCommand command = new NpgsqlCommand("SELECT interval FROM intervalsite", npgsqlConnection);
-            NpgsqlDataReader reader = command.ExecuteReader();
-            try
-            {
-                if (reader.Read())
-                {
-                    int result = reader.GetInt32(0);
-                    Interval = result;
-                }
-                reader.Close();
-                npgsqlConnection.Close();
-            }
-            catch (Exception ex)
-            {
-            }
+           var list = _dBRepo.AddSite(Url);
+            Sites.Add(list);
         }
 
         private void IntervalSiteRequest(object obj)
         {
-            Interval interReq = new Interval();
-            interReq.Intervalsite = Interval;
-            NpgsqlConnection npgsqlConnection = new NpgsqlConnection(connectionString);
-            npgsqlConnection.Open();
-            NpgsqlCommand command = new NpgsqlCommand("UPDATE intervalsite SET interval ='" + interReq.Intervalsite + "';", npgsqlConnection);
-            command.ExecuteNonQuery();
-            npgsqlConnection.Close();
+            _dBRepo.IntervalSiteRequest(Interval);
         }
 
         #endregion
 
         #region Public Properties
-
         public void ThreadProc()
         {
             try
@@ -162,6 +103,7 @@ namespace PingSite
                     using (var webClient = new WebClient())
                     {
                         var tempList = Sites.ToList();
+
                         foreach (Site _qwe in tempList)
                         {
                             _qwe.Status = "Подключение";
@@ -183,7 +125,7 @@ namespace PingSite
                     Thread.Sleep(Interval * 1000);
                 }
             }
-            catch(Exception ex) { }
+            catch (Exception ex) { throw; }
         }
 
         public string Status
@@ -253,7 +195,6 @@ namespace PingSite
             }
         }
 
-        public ObservableCollection<Site> Sites { get; set; }
         #endregion
     }
 }

@@ -8,7 +8,9 @@
         d:DataContext="{d:DesignInstance Type=vm:ViewModel, IsDesignTimeCreatable=False}"
         mc:Ignorable="d"
         Title="MainWindow" Height="350" Width="523">
-        
+    <Window.Resources>
+        <local:ColorBrushConverter x:Key="ColorBrushConverter"/>
+    </Window.Resources>
     <Grid
         Margin="10">
         <Grid.ColumnDefinitions>
@@ -30,12 +32,19 @@
             <DataGrid.Columns>
                 <DataGridTextColumn 
                     Header="Сайт" 
-                    Binding="{Binding Url}" />
+                    Binding="{Binding Url}"/>
                 <DataGridTextColumn
                     Header="Статус"
-                    Binding="{Binding Status}"/>
+                    Binding="{Binding Status}">
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="{x:Type TextBlock}">
+                            <Setter Property="Background" 
+                                    Value="{Binding Status, 
+                                Converter={StaticResource ColorBrushConverter}}"/>
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
             </DataGrid.Columns>
-            
         </DataGrid>
         <TextBlock
             Grid.Row="1"

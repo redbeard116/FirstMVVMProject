@@ -6,6 +6,7 @@ namespace PingSite
     {
         #region Fields
         private int _interval;
+        private int id;
         #endregion
         #region Public Properties
         public int Intervalsite
@@ -18,6 +19,18 @@ namespace PingSite
             {
                 _interval = value;
                 OnPC("IntervalSite");
+            }
+        }
+        public int Id
+        {
+            get
+            {
+                return id;
+            }
+            set
+            {
+                id = value;
+                OnPC("Id");
             }
         }
         public event PropertyChangedEventHandler PropertyChanged;

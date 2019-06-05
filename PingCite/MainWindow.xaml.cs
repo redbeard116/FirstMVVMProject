@@ -1,7 +1,4 @@
 ﻿using System.Windows;
-using System.Threading;
-using System;
-using System.Net;
 
 namespace PingSite
 {
@@ -13,8 +10,8 @@ namespace PingSite
         public MainWindow()
         {
             InitializeComponent();
-            DataContext = new ViewModel();
-
+            
+            DataContext = new ViewModel(new DBEntity());
         }
     }
 }
